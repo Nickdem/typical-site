@@ -7,11 +7,10 @@ import { reviewsModel } from "../models/reviews-model"
 import { contactsModel } from "../models/contacts-model"
 
 export class App {
-  constructor() {
-    this.mainContent
-  }
+  mainContent
+  constructor() {}
 
-  checkLocation(path) {
+  #checkLocation(path) {
     switch (path) {
       case '/':
         return homeModel
@@ -29,9 +28,29 @@ export class App {
     }
   }
 
-  update(path) {
+  #makeLinksHandlers() {
+    const links = document.querySelector('.header__inner').querySelectorAll('a')
+
+    Array.from(links).forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault()
+        const path = e.target.pathname || '/'
+
+        if (window.location.pathname === path) return
+
+        document.querySelector('main').classList.remove('show')
+
+        setTimeout(() => {
+          history.pushState(null, null, path);
+          this.#update(path)
+        }, 400)
+      })
+    })
+  }
+
+  #update(path) {
     this.mainContent.destroy()
-    this.mainContent.render(this.checkLocation(path))
+    this.mainContent.render(this.#checkLocation(path))
     setTimeout(() => {
       this.mainContent.show()
       if (path === '/') this.mainContent.createBtn('Написать нам')
@@ -43,6 +62,8 @@ export class App {
     header.render(headerModel)
 
     this.mainContent = new MainContent('.app')
-    this.update(window.location.pathname)
+    this.#update(window.location.pathname)
+
+    this.#makeLinksHandlers()
   }
 }
